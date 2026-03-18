@@ -121,7 +121,7 @@ function App() {
 
       <div className="fixed bottom-6 left-0 right-0 px-4">
         <a 
-          href={`https://wa.me/${WHATSAPP_NUMBER}`}
+          href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer"
           className="max-w-md mx-auto bg-[#f63ed7] text-white h-14 rounded-2xl shadow-lg flex items-center justify-center gap-3 font-bold hover:bg-pink-600 transition-colors"
         >
           <MessageCircle size={24} />
