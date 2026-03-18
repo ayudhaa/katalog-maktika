@@ -1,5 +1,5 @@
-import React from 'react';
-import { ShoppingCart, MessageCircle, Instagram, MapPin, ChevronRight, Heart } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MessageCircle, MapPin, ChevronRight, Heart, ArrowUp } from 'lucide-react';
 
 const SNACK_DATA = [
   {
@@ -30,13 +30,34 @@ const SNACK_DATA = [
 
 function App() {
   const WHATSAPP_NUMBER = "62895412755110";
+  const [isShrunk, setIsShrunk] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsShrunk(true);
+      } else {
+        setIsShrunk(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const orderViaWA = (productName) => {
     const message = `Halo MakTika, saya mau pesan *${productName}*. Apakah masih tersedia ?`;
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
+  const handleFloatingBtnClick = (e) => {
+    if (isShrunk) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#FFFBF5] font-sans text-slate-900 pb-20">
+    <div className="min-h-screen bg-[#FFFBF5] font-sans text-slate-900 pb-28">
       <header className="bg-white pb-8 shadow-sm">
         <div className="h-40 bg-orange-100 relative">
            <img 
@@ -55,7 +76,9 @@ function App() {
           <p className="text-[#A78B71] text-sm mt-1 font-medium italic">Sajian Snack Tradisional Premium</p>
           
           <div className="flex justify-center gap-3 mt-4">
-            <a href={`https://wa.me/${WHATSAPP_NUMBER}`} className="p-2 bg-[#E8F5E9] rounded-full text-green-600"><MessageCircle size={20}/></a>
+            <a href={`https://wa.me/${WHATSAPP_NUMBER}`} className="p-2 bg-[#E8F5E9] rounded-full text-green-600 hover:bg-green-200 transition-colors">
+              <MessageCircle size={20}/>
+            </a>
             <a 
               href="https://maps.app.goo.gl/WX9pra9e3e1oM2A88" 
               target="_blank" 
@@ -108,24 +131,42 @@ function App() {
             <MapPin size={16}/> Info Pengiriman
           </h4>
           <p className="text-xs text-[#8D6E63] mt-1 leading-relaxed">
-            Pengiriman dari <a href="https://maps.app.goo.gl/WX9pra9e3e1oM2A88" target="_blank" rel="noopener noreferrer" className="font-bold underline">Gempol, Jakarta Timur</a>. Melayani instan (Grab/Gojek).
+            Pengiriman dari Gempol, Jakarta Timur. Melayani instan (Grab/Gojek).
           </p>
         </div>
 
         <footer className="mt-12 mb-20 text-center">
-          <p className="text-[#A78B71] text-xs font-semibold flex items-center justify-center gap-1">
-            made by<Heart size={12} className="fill-red-400 text-red-400 animate-pulse" />
+          <p className="text-[#A78B71] text-xs font-semibold flex items-center justify-center gap-1 uppercase tracking-widest">
+            made by <Heart size={12} className="fill-red-400 text-red-400 animate-pulse" />
           </p>
         </footer>
       </main>
 
-      <div className="fixed bottom-6 left-0 right-0 px-4">
+      <div className="fixed bottom-6 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none">
         <a 
-          href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer"
-          className="max-w-md mx-auto bg-[#f63ed7] text-white h-14 rounded-2xl shadow-lg flex items-center justify-center gap-3 font-bold hover:bg-pink-600 transition-colors"
+          href={`https://wa.me/${WHATSAPP_NUMBER}`} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          onClick={handleFloatingBtnClick}
+          className={`
+            pointer-events-auto flex items-center justify-center bg-[#f63ed7] text-white shadow-2xl font-bold 
+            transition-all duration-700 ease-in-out overflow-hidden
+            ${isShrunk 
+              ? 'w-14 h-14 rounded-full' 
+              : 'w-full max-w-md h-14 rounded-2xl px-6'
+            }
+          `}
         >
-          <MessageCircle size={24} />
-          Chat Penjualnya
+          {isShrunk ? (
+            <div key="icon" className="flex items-center justify-center animate-in fade-in zoom-in duration-500">
+              <ArrowUp size={24} />
+            </div>
+          ) : (
+            <div key="text" className="flex items-center gap-3 whitespace-nowrap animate-in fade-in duration-500">
+              <MessageCircle size={24} />
+              <span>Chat Penjualnya</span>
+            </div>
+          )}
         </a>
       </div>
     </div>
