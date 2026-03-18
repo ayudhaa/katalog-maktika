@@ -131,7 +131,7 @@ function App() {
             <MapPin size={16}/> Info Pengiriman
           </h4>
           <p className="text-xs text-[#8D6E63] mt-1 leading-relaxed">
-            Pengiriman dari Gempol, Jakarta Timur. Melayani instan (Grab/Gojek).
+            Pengiriman dari <a href="https://maps.app.goo.gl/WX9pra9e3e1oM2A88" target="_blank" rel="noopener noreferrer" className="hover:bg-blue-200 transition-colors">Gempol, Jakarta Timur</a>. Melayani instan (Grab/Gojek).
           </p>
         </div>
 
