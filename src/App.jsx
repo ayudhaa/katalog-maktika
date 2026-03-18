@@ -137,7 +137,7 @@ function App() {
 
         <footer className="mt-12 mb-20 text-center">
           <p className="text-[#A78B71] text-xs font-semibold flex items-center justify-center gap-1 tracking-widest">
-            made by<Heart size={12} className="fill-red-400 text-red-400 animate-pulse" />
+            made with<Heart size={12} className="fill-red-400 text-red-400 animate-pulse" />
           </p>
         </footer>
       </main>
