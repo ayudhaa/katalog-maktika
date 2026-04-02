@@ -1,36 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, MapPin, ChevronRight, Heart, ArrowUp } from 'lucide-react';
-
-const SNACK_DATA = [
-  {
-    id: 1,
-    name: "Peyek Kacang",
-    price: "25.000",
-    weight: "250g",
-    image: "https://images.unsplash.com/photo-1599490659223-930b447871fc?auto=format&fit=crop&q=80&w=400",
-    desc: "Renyah, gurih, dengan taburan kacang tanah pilihan."
-  },
-  {
-    id: 2,
-    name: "Keripik Pisang Manis",
-    price: "20.000",
-    weight: "200g",
-    image: "https://images.unsplash.com/photo-1613274554329-70f997f5789f?auto=format&fit=crop&q=80&w=400",
-    desc: "Pisang pilihan diiris tipis, digoreng renyah dengan balutan gula asli."
-  },
-  {
-    id: 3,
-    name: "Keripik Pisang Asin",
-    price: "20.000",
-    weight: "200g",
-    image: "https://images.unsplash.com/photo-1613274554329-70f997f5789f?auto=format&fit=crop&q=80&w=400",
-    desc: "Pisang pilihan diiris tipis, digoreng renyah dan juga gurih."
-  }
-];
+import { MessageCircle, MapPin, ChevronRight, Heart, ArrowUp, Loader2 } from 'lucide-react';
+import { db } from './firebase'; 
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 
 function App() {
   const WHATSAPP_NUMBER = "62895412755110";
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isShrunk, setIsShrunk] = useState(false);
+
+  useEffect(() => {
+    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setProducts(data);
+      setLoading(false);
+    }, (error) => {
+      console.error("Firebase Error:", error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 50) {
@@ -98,32 +93,45 @@ function App() {
         </h2>
 
         <div className="space-y-4">
-          {SNACK_DATA.map((item) => (
-            <div key={item.id} className="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#F3E5D8] flex p-3 gap-4 active:scale-[0.98] transition-transform">
-              <img 
-                src={item.image} 
-                className="w-24 h-24 rounded-2xl object-cover shrink-0" 
-                alt={item.name} 
-              />
-              <div className="flex flex-col justify-center flex-1 py-1">
-                <div className="mb-2">
-                  <h3 className="font-bold text-slate-800 leading-tight">{item.name}</h3>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    {item.desc}
-                  </p>
-                </div>
-                <div className="flex justify-between items-center mt-auto">
-                  <span className="font-black text-[#A78B71]">Rp {item.price}</span>
-                  <button 
-                    onClick={() => orderViaWA(item.name)}
-                    className="bg-[#433422] text-white text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-sm active:bg-slate-700"
-                  >
-                    PESAN <ChevronRight size={12}/>
-                  </button>
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-10 text-stone-400">
+              <Loader2 className="animate-spin mb-2" size={24} />
+              <p className="text-xs font-bold uppercase tracking-widest">Memuat Menu...</p>
+            </div>
+          ) : (
+            products.map((item) => (
+              <div key={item.id} className="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#F3E5D8] flex p-3 gap-4 active:scale-[0.98] transition-transform">
+                <img 
+                  src={item.imageUrl} 
+                  className="w-24 h-24 rounded-2xl object-cover shrink-0 bg-stone-50" 
+                  alt={item.name} 
+                />
+                <div className="flex flex-col justify-center flex-1 py-1 min-w-0">
+                  <div className="mb-2">
+                    <h3 className="font-bold text-slate-800 leading-tight truncate">{item.name}</h3>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">
+                      {item.desc}
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center mt-auto">
+                    <span className="font-black text-[#A78B71]">
+                      Rp {item.price?.toLocaleString('id-ID')}
+                    </span>
+                    <button 
+                      onClick={() => orderViaWA(item.name)}
+                      className="bg-[#433422] text-white text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-sm active:bg-slate-700"
+                    >
+                      PESAN <ChevronRight size={12}/>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
+
+          {!loading && products.length === 0 && (
+            <p className="text-center text-stone-400 italic text-sm py-10">Belum ada menu di katalog.</p>
+          )}
         </div>
 
         <div className="mt-8 bg-[#FEF9F3] p-4 rounded-2xl border border-[#F3E5D8]">
@@ -144,8 +152,8 @@ function App() {
 
       <div className="fixed bottom-6 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none">
         <a 
-          href={`https://wa.me/${WHATSAPP_NUMBER}`} 
-          target="_blank" 
+          href={isShrunk ? "#" : `https://wa.me/${WHATSAPP_NUMBER}`} 
+          target={isShrunk ? "_self" : "_blank"} 
           rel="noopener noreferrer"
           onClick={handleFloatingBtnClick}
           className={`
